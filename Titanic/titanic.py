@@ -139,19 +139,23 @@ classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = [
 # loss function 'binary_crossentropy' for binary outpur; more than two output 'categorical_crossentropy
 
 # Fitting the ANN to the Training set
-from math import sqrt
 classifier.fit(X_train, y, batch_size = 10, nb_epoch = 100)
 
 y_pred = classifier.predict(X_test)
 y_pred = (y_pred>0.5)*1
 
-'''
+
 # Compute the accuracy score for all the cross validation folds.  (much simpler than what we did before!)
-from sklearn import cross_validation
-scores = cross_validation.cross_val_score(classifier, X_train, y, cv=10)
-# Take the mean of the scores (because we have one for each fold)
-print("Accuracy on 10-fold classification: ", scores.mean())
-'''
+from sklearn.model_selection import StratifiedKFold
+# define 10-fold cross validation test harness
+kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
+cvscores = []
+for train, test in kfold.split(X_train, y):
+	scores = classifier.evaluate(X_train[test], y[test], verbose=0)
+	print("%s: %.2f%%" % (classifier.metrics_names[1], scores[1]*100))
+	cvscores.append(scores[1] * 100)
+print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
+
 
 
 
