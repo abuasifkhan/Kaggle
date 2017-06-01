@@ -32,50 +32,6 @@ dataset['Embarked'] = embarkedEncoder.fit_transform(dataset['Embarked'])
 #X = dataset[predictors].iloc[:,:]
 y = dataset['Survived']
 
-
-## Feature Scaling
-#from sklearn.preprocessing import StandardScaler
-#ageScale = StandardScaler()
-#X[:,2] = ageScale.fit_transform(X[:,2].reshape(-1,1)).flatten()
-
-# Splitting the dataset into the Training set and Test set
-#from sklearn.cross_validation import train_test_split
-#X_train, X_test_, y_train, y_test_ = train_test_split(X, y, test_size = 0.00, random_state = 0)
-
-
-# Fitting Kernel SVM to the Training set
-#from sklearn.svm import SVC
-#classifier = SVC(kernel = 'rbf', random_state = 0)
-#classifier.fit(X_train, y_train)
-
-
-#from sklearn.ensemble import RandomForestClassifier
-#classifier = RandomForestClassifier(n_estimators = 100, criterion = 'entropy', random_state = 0)
-#classifier.fit(X_train, y_train)
-
-from sklearn.linear_model import LogisticRegression
-classifier = LogisticRegression(random_state = 1)
-classifier.fit(dataset[predictors], y)
-
-
-# Compute the accuracy score for all the cross validation folds.  (much simpler than what we did before!)
-from sklearn import cross_validation
-scores = cross_validation.cross_val_score(classifier, dataset[predictors], y, cv=10)
-# Take the mean of the scores (because we have one for each fold)
-print("Accuracy on 10-fold Logistic Regression: ", scores.mean())
-
-
-
-'''## Predicting the Test set results
-y_pred_ = classifier.predict(X_test_)
-# Making the Confusion Matrix
-from sklearn.metrics import confusion_matrix
-cm = confusion_matrix(y_test_, y_pred_)
-'''
-
-
-
-
 # Importing the test dataset
 testset = pd.read_csv('test.csv')
 
@@ -96,33 +52,82 @@ testset['Embarked'] = embarkedEncoder.transform(testset['Embarked'])
 
 
 ## Feature Scaling
+#from sklearn.preprocessing import StandardScaler
+#ageScale = StandardScaler()
+#X[:,2] = ageScale.fit_transform(dataset[:,2].reshape(-1,1)).flatten()
+
+# Splitting the dataset into the Training set and Test set
+#from sklearn.cross_validation import train_test_split
+#X_train, X_test_, y_train, y_test_ = train_test_split(X, y, test_size = 0.00, random_state = 0)
+
+
+## Fitting Kernel SVM to the Training set
+#from sklearn.svm import SVC
+#classifier = SVC(kernel = 'rbf')
+
+
+from sklearn.ensemble import RandomForestClassifier
+classifier = RandomForestClassifier(n_estimators = 100, criterion = 'entropy', random_state = 0)
+
+#
+#from sklearn.linear_model import LogisticRegression
+#classifier = LogisticRegression(random_state = 1)
+
+
+#from sklearn import tree
+#classifier = tree.DecisionTreeClassifier(criterion = 'entropy', max_depth=7)
+
+#from sklearn.naive_bayes import GaussianNB
+#classifier = GaussianNB()
+
+classifier.fit(dataset[predictors], y)
+
+# Compute the accuracy score for all the cross validation folds.  (much simpler than what we did before!)
+from sklearn import cross_validation
+scores = cross_validation.cross_val_score(classifier, dataset[predictors], y, cv=10)
+# Take the mean of the scores (because we have one for each fold)
+print("Accuracy on 10-fold classification: ", scores.mean())
+
+
+
+'''## Predicting the Test set results
+y_pred_ = classifier.predict(X_test_)
+# Making the Confusion Matrix
+from sklearn.metrics import confusion_matrix
+cm = confusion_matrix(y_test_, y_pred_)
+'''
+
+
+
+
+
+
+
+## Feature Scaling
 #X_test[:,2] = ageScale.transform(X_test[:,2].reshape(-1,1)).flatten()
 
 
 # Predicting the Test set results
 y_pred = classifier.predict(testset[predictors])
-
-## Submission csv Generate
-#submission = pd.DataFrame({
-#        'PassengerId':testset['PassengerId'],
-#        "Survived": y_pred
-#        })
-#submission.to_csv('titanic.csv',index=False)
-
-
-# Building the optimal model using Backward Elimination
-import statsmodels.formula.api as sm
-X = np.append(arr = np.ones((dataset[predictors].shape[0], 1)).astype(int), values = dataset[predictors], axis = 1)
-X_opt = X[:, [0,1,2,3,4,5,6]]
-regressor_OLS = sm.OLS(endog = y, exog = X_opt).fit()
-regressor_OLS.summary()
-X_opt = X[:, [0,1,2,3,4,5]]
-regressor_OLS = sm.OLS(endog = y, exog = X_opt).fit()
-regressor_OLS.summary()
+#
+# Submission csv Generate
+print('Making Submission CSV file')
+submission = pd.DataFrame({
+        'PassengerId':testset['PassengerId'],
+        "Survived": y_pred
+        })
+submission.to_csv('titanic.csv',index=False)
 
 
-
-
+## Building the optimal model using Backward Elimination
+#import statsmodels.formula.api as sm
+#X = np.append(arr = np.ones((dataset[predictors].shape[0], 1)).astype(int), values = dataset[predictors], axis = 1)
+#X_opt = X[:, [0,1,2,3,4,5,6]]
+#regressor_OLS = sm.OLS(endog = y, exog = X_opt).fit()
+#regressor_OLS.summary()
+#X_opt = X[:, [0,1,2,3,4,5]]
+#regressor_OLS = sm.OLS(endog = y, exog = X_opt).fit()
+#regressor_OLS.summary()
 
 
 
